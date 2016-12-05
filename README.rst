@@ -12,7 +12,8 @@ Scapy_
 ------
 
 Installing ``scapy`` can be done like this:
-.. code:: bash
+
+.. code::
 
     $ wget scapy.net
     $ unzip index.html
@@ -23,7 +24,8 @@ Arping_
 -------
 
 Installing ``arping`` is as easy as:
-.. code:: bash
+
+.. code::
 
     # apt-get install arping
 
@@ -31,7 +33,8 @@ TCPDump_
 --------
 
 ``tcpdump`` can be installed via your packet manager:
-.. code:: bash
+
+.. code::
 
     # apt-get install tcpdump
 
@@ -40,7 +43,8 @@ Example
 =======
 
 To run ``ar.py``, simply run the following in your terminal:
-.. code:: bash
+
+.. code::
 
     # ./ar.py
 
