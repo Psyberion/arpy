@@ -9,26 +9,33 @@ Dependencies
 ============
 
 Scapy_
-::
+------
+
+Installing ``scapy`` can be done like this::
     $ wget scapy.net
     $ unzip index.html
     $ cd scapy*
     # python setup.py install
 
 Arping_
-::
+-------
+
+Installing ``arping`` is as easy as::
     # apt-get install arping
 
 TCPDump_
-::
+--------
+
+``tcpdump`` can be installed via your packet manager::
     # apt-get install tcpdump
 
-.. _Scapy   : http://www.secdev.org/projects/scapy/doc/installation.html
-.. _Arping  : https://github.com/ThomasHabets/arping
-.. _TCPDump : http://www.tcpdump.org/
 
 Example
 =======
 
-::
+To run ``ar.py``, simply run the following in your terminal::
     # ./ar.py
+
+.. _Scapy : http://www.secdev.org/projects/scapy/doc/installation.html
+.. _Arping : https://github.com/ThomasHabets/arping
+.. _TCPDump : http://www.tcpdump.org/
