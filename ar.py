@@ -66,8 +66,8 @@ def initArgs():
 	parser.add_argument("-o","--output",type=str,help="Output file")
 	return parser
 
-def poisonArp(_interface,_spoofIp,_targetIp):
-	cmd = "arping -Uqi {} -S {} -w 2000 {} &".format(_interface,_spoofIp,_targetIp)
+def poisonArp(_iface,_spoofIp,_targetIp):
+	cmd = "arping -Uqi {} -S {} -w 2000 {} &".format(_iface,_spoofIp,_targetIp)
 	os.system(cmd);
 
 def getNetworkSize(_netmask):
