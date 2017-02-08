@@ -105,7 +105,7 @@ def listDevices(_network):
 	# List available devices
 	devices = probeNetwork(_network)
 	res = -1
-	list = "[-] No devices found on network\n"
+	list = "No devices found on network\n"
 	if len(devices) > 0:
 		list =	'''
 +-------------------+----------------+
