@@ -42,11 +42,28 @@ TCPDump_
 Example
 =======
 
-To run ``ar.py``, simply run the following in your terminal:
+The following is an example use of ARpy, from start to finish.
+
+First, scan the network for potential targets, as follows:
 
 .. code::
 
-    # ./ar.py
+    # ./ar.py --list --interface <INTERFACE>
+
+``<INTERFACE>`` is exchanged for the interface you want to use, e.g. ``eth0``.
+
+This will list all hosts on the network. Once you've chosen which host to target
+(and determined the gateway (ar.py does not do this for you), run the following:
+
+.. code::
+
+	# ./ar.py -t <TARGET IP> -r <GATEWAY IP> -i <INTERFACE>
+
+``<TARGET IP>`` is exchanged for the target IP, e.g. ``192.168.0.2`` and
+``<GATEWAY IP>`` is exchanged for the router IP, e.g. ``192.168.0.1``.
+
+This will start the ARP poisoning attack and the network sniffing. Once you're
+done sniffing the network, just hit ``CTRL+C`` to quit.
 
 .. _Scapy : http://www.secdev.org/projects/scapy/doc/installation.html
 .. _Arping : https://github.com/ThomasHabets/arping
